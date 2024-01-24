@@ -13,6 +13,9 @@ const loaderAnimation = document.createElement('div');
 loaderAnimation.classList.add('loader');
 
 let pageNumber = 1;
+let limitOfPicsPerPage = 40;
+const totalPages = Math.ceil(500 / limitOfPicsPerPage);
+let inputQuery = '';
 const userKey = '41829663-a3becd9e4f80ae5dbcbf223ac';
 
 const instanceOfLightbox = new simpleLightbox('li a', {
@@ -29,7 +32,7 @@ async function onFormSubmit(e) {
   pageNumber = 1;
   gallery.innerHTML = '';
   form.after(loaderAnimation);
-  let inputQuery = formInput.value;
+  inputQuery = formInput.value;
 
   try {
     const pics = await fetchPics();
@@ -46,51 +49,54 @@ async function onFormSubmit(e) {
     formInput.value = '';
   }
 
-  async function fetchPics() {
-    const response = await axios.get('https://pixabay.com/api/', {
-      params: {
-        key: `${userKey}`,
-        q: `${inputQuery}`,
-        image_type: 'photo',
-        orientation: 'horizontal',
-        safesearch: true,
-        per_page: 40,
-        page: `${pageNumber}`,
-      },
-    });
+  loadBtn.addEventListener('click', onLoadBtnClick);
+}
 
-    return response.data;
+async function fetchPics() {
+  const response = await axios.get('https://pixabay.com/api/', {
+    params: {
+      key: `${userKey}`,
+      q: `${inputQuery}`,
+      image_type: 'photo',
+      orientation: 'horizontal',
+      safesearch: true,
+      per_page: `${limitOfPicsPerPage}`,
+      page: `${pageNumber}`,
+    },
+  });
+
+  return response.data;
+}
+
+function renderPics({ hits }) {
+  if (!hits.length) {
+    iziToast.show({
+      message:
+        'Sorry, there are no images matching your search query. Please, try again!',
+      position: 'topRight',
+      color: '#EF4040',
+      messageColor: '#FAFAFB',
+      iconUrl: bixOctagonSvg,
+    });
   }
 
-  function renderPics({ hits }) {
-    if (!hits.length) {
-      iziToast.show({
-        message:
-          'Sorry, there are no images matching your search query. Please, try again!',
-        position: 'topRight',
-        color: '#EF4040',
-        messageColor: '#FAFAFB',
-        iconUrl: bixOctagonSvg,
-      });
-    }
+  if (hits.length) {
+    loadBtn.style.display = 'flex';
+    loadBtn.after(loaderAnimation);
+  }
 
-    if (hits.length) {
-      loadBtn.style.display = 'flex';
-      loadBtn.after(loaderAnimation);
-    }
-
-    const markup = hits
-      .map(
-        ({
-          webformatURL,
-          largeImageURL,
-          tags,
-          likes,
-          views,
-          comments,
-          downloads,
-        }) =>
-          `<li class="gallery-item">
+  const markup = hits
+    .map(
+      ({
+        webformatURL,
+        largeImageURL,
+        tags,
+        likes,
+        views,
+        comments,
+        downloads,
+      }) =>
+        `<li class="gallery-item">
               <a class="item-link" href="${largeImageURL}">
                 <img
                   src="${webformatURL}"
@@ -118,34 +124,39 @@ async function onFormSubmit(e) {
                 </li>
               </ul>
             </li>`
-      )
-      .join('');
+    )
+    .join('');
 
-    loaderAnimation.remove();
-    gallery.insertAdjacentHTML('beforeend', markup);
-    formInput.value = '';
+  loaderAnimation.remove();
+  gallery.insertAdjacentHTML('beforeend', markup);
+  formInput.value = '';
 
-    instanceOfLightbox.refresh();
+  instanceOfLightbox.refresh();
+}
+
+async function onLoadBtnClick() {
+  if (pageNumber > totalPages) {
+    loadBtn.style.display = 'none';
+    return iziToast.info({
+      message: `We're sorry, but you've reached the end of search results.`,
+      position: 'topRight',
+    });
   }
 
-  loadBtn.addEventListener('click', async () => {
-    pageNumber++;
-    loadBtn.after(loaderAnimation);
-    console.log(inputQuery);
-    console.log(pageNumber);
-    try {
-      const pics = await fetchPics();
-      renderPics(pics);
-    } catch (error) {
-      loaderAnimation.remove();
-      iziToast.show({
-        message: `${error}`,
-        position: 'topRight',
-        color: '#EF4040',
-        messageColor: '#FAFAFB',
-        iconUrl: '/img/bi_x-octagon.svg',
-      });
-      formInput.value = '';
-    }
-  });
+  pageNumber++;
+  loadBtn.after(loaderAnimation);
+
+  try {
+    const pics = await fetchPics();
+    renderPics(pics);
+  } catch (error) {
+    loaderAnimation.remove();
+    iziToast.show({
+      message: `${error}`,
+      position: 'topRight',
+      color: '#EF4040',
+      messageColor: '#FAFAFB',
+      iconUrl: '/img/bi_x-octagon.svg',
+    });
+  }
 }
