@@ -3,12 +3,17 @@ import 'izitoast/dist/css/iziToast.min.css';
 import simpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 import bixOctagonSvg from './img/bi_x-octagon.svg';
+import axios from 'axios';
 
 const form = document.querySelector('.form');
 const formInput = document.querySelector('.form-input');
 const gallery = document.querySelector('.gallery');
+const loadBtn = document.querySelector('.load-btn');
 const loaderAnimation = document.createElement('div');
 loaderAnimation.classList.add('loader');
+
+let pageNumber = 1;
+const userKey = '41829663-a3becd9e4f80ae5dbcbf223ac';
 
 const instanceOfLightbox = new simpleLightbox('li a', {
   captionsData: 'alt',
@@ -18,54 +23,68 @@ const instanceOfLightbox = new simpleLightbox('li a', {
 
 form.addEventListener('submit', onFormSubmit);
 
-function onFormSubmit(e) {
+async function onFormSubmit(e) {
   e.preventDefault();
   gallery.innerHTML = '';
   form.after(loaderAnimation);
-
   const inputQuery = formInput.value;
-  const userKey = '41829663-a3becd9e4f80ae5dbcbf223ac';
-  const searchParams = new URLSearchParams({
-    key: `${userKey}`,
-    q: `${inputQuery}`,
-    image_type: 'photo',
-    orientation: 'horizontal',
-    safesearch: true,
-    per_page: 30,
-  });
 
-  fetch(`https://pixabay.com/api/?${searchParams}`)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(response.status);
-      } else {
-        return response.json();
-      }
-    })
-    .then(({ hits }) => {
-      if (!hits.length) {
-        iziToast.show({
-          message:
-            'Sorry, there are no images matching your search query. Please, try again!',
-          position: 'topRight',
-          color: '#EF4040',
-          messageColor: '#FAFAFB',
-          iconUrl: bixOctagonSvg,
-        });
-      }
+  try {
+    const pics = await fetchPics();
+    renderPics(pics);
+    loadBtn.style.display = 'flex';
+  } catch (error) {
+    loaderAnimation.remove();
+    iziToast.show({
+      message: `${error}`,
+      position: 'topRight',
+      color: '#EF4040',
+      messageColor: '#FAFAFB',
+      iconUrl: '/img/bi_x-octagon.svg',
+    });
+    formInput.value = '';
+  }
 
-      const markup = hits
-        .map(
-          ({
-            webformatURL,
-            largeImageURL,
-            tags,
-            likes,
-            views,
-            comments,
-            downloads,
-          }) =>
-            `<li class="gallery-item">
+  async function fetchPics() {
+    const response = await axios.get('https://pixabay.com/api/', {
+      params: {
+        key: `${userKey}`,
+        q: `${inputQuery}`,
+        image_type: 'photo',
+        orientation: 'horizontal',
+        safesearch: true,
+        per_page: 40,
+        page: `${pageNumber}`,
+      },
+    });
+
+    return response.data;
+  }
+
+  function renderPics({ hits }) {
+    if (!hits.length) {
+      iziToast.show({
+        message:
+          'Sorry, there are no images matching your search query. Please, try again!',
+        position: 'topRight',
+        color: '#EF4040',
+        messageColor: '#FAFAFB',
+        iconUrl: bixOctagonSvg,
+      });
+    }
+
+    const markup = hits
+      .map(
+        ({
+          webformatURL,
+          largeImageURL,
+          tags,
+          likes,
+          views,
+          comments,
+          downloads,
+        }) =>
+          `<li class="gallery-item">
               <a class="item-link" href="${largeImageURL}">
                 <img
                   src="${webformatURL}"
@@ -93,16 +112,23 @@ function onFormSubmit(e) {
                 </li>
               </ul>
             </li>`
-        )
-        .join('');
+      )
+      .join('');
 
-      loaderAnimation.remove();
-      gallery.insertAdjacentHTML('beforeend', markup);
-      formInput.value = '';
+    loaderAnimation.remove();
+    gallery.insertAdjacentHTML('beforeend', markup);
+    formInput.value = '';
 
-      instanceOfLightbox.refresh();
-    })
-    .catch(error => {
+    instanceOfLightbox.refresh();
+  }
+
+  loadBtn.addEventListener('click', async () => {
+    try {
+      pageNumber++;
+      const pics = await fetchPics();
+      renderPics(pics);
+      loadBtn.style.display = 'flex';
+    } catch (error) {
       loaderAnimation.remove();
       iziToast.show({
         message: `${error}`,
@@ -112,5 +138,6 @@ function onFormSubmit(e) {
         iconUrl: '/img/bi_x-octagon.svg',
       });
       formInput.value = '';
-    });
+    }
+  });
 }
