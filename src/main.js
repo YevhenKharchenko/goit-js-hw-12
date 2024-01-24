@@ -25,14 +25,15 @@ form.addEventListener('submit', onFormSubmit);
 
 async function onFormSubmit(e) {
   e.preventDefault();
+  loadBtn.style.display = 'none';
+  pageNumber = 1;
   gallery.innerHTML = '';
   form.after(loaderAnimation);
-  const inputQuery = formInput.value;
+  let inputQuery = formInput.value;
 
   try {
     const pics = await fetchPics();
     renderPics(pics);
-    loadBtn.style.display = 'flex';
   } catch (error) {
     loaderAnimation.remove();
     iziToast.show({
@@ -71,6 +72,11 @@ async function onFormSubmit(e) {
         messageColor: '#FAFAFB',
         iconUrl: bixOctagonSvg,
       });
+    }
+
+    if (hits.length) {
+      loadBtn.style.display = 'flex';
+      loadBtn.after(loaderAnimation);
     }
 
     const markup = hits
@@ -123,11 +129,13 @@ async function onFormSubmit(e) {
   }
 
   loadBtn.addEventListener('click', async () => {
+    pageNumber++;
+    loadBtn.after(loaderAnimation);
+    console.log(inputQuery);
+    console.log(pageNumber);
     try {
-      pageNumber++;
       const pics = await fetchPics();
       renderPics(pics);
-      loadBtn.style.display = 'flex';
     } catch (error) {
       loaderAnimation.remove();
       iziToast.show({
