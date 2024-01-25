@@ -86,10 +86,10 @@ function renderPics({ hits }) {
     loaderAnimation.style.marginTop = '0';
   }
 
-  if (hits.length < limitOfPicsPerPage) {
+  if (hits.length < limitOfPicsPerPage && hits.length >= 1) {
     loadBtn.style.display = 'none';
     loaderAnimation.remove();
-    return iziToast.info({
+    iziToast.info({
       message: `We're sorry, but you've reached the end of search results.`,
       position: 'topRight',
     });
