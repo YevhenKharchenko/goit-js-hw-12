@@ -40,7 +40,7 @@ async function onFormSubmit(e) {
   } catch (error) {
     loaderAnimation.remove();
     iziToast.show({
-      message: `${error}`,
+      message: `Oops! Something went wrong. Please try again later or contact support if the issue persists. Error details: ${error.message}`,
       position: 'topRight',
       color: '#EF4040',
       messageColor: '#FAFAFB',
@@ -83,6 +83,7 @@ function renderPics({ hits }) {
   if (hits.length) {
     loadBtn.style.display = 'flex';
     loadBtn.after(loaderAnimation);
+    loaderAnimation.style.marginTop = '0';
   }
 
   const markup = hits
@@ -135,28 +136,41 @@ function renderPics({ hits }) {
 }
 
 async function onLoadBtnClick() {
+  pageNumber++;
+  loadBtn.after(loaderAnimation);
+  loadBtn.style.display = 'none';
+
+  try {
+    const pics = await fetchPics();
+    renderPics(pics);
+
+    const galleryItem = document.querySelector('.gallery-item');
+    const galleryItemRect = galleryItem.getBoundingClientRect();
+    const galleryComputedStyle = getComputedStyle(gallery);
+    const galleryGapValue = parseFloat(
+      galleryComputedStyle.getPropertyValue('gap')
+    );
+
+    scrollBy({
+      top: galleryItemRect.height * 3 + galleryGapValue * 5,
+      behavior: 'smooth',
+    });
+  } catch (error) {
+    loaderAnimation.remove();
+    iziToast.show({
+      message: `Oops! Something went wrong. Please try again later or contact support if the issue persists. Error details: ${error.message}`,
+      position: 'topRight',
+      color: '#EF4040',
+      messageColor: '#FAFAFB',
+      iconUrl: '/img/bi_x-octagon.svg',
+    });
+  }
+
   if (pageNumber > totalPages) {
     loadBtn.style.display = 'none';
     return iziToast.info({
       message: `We're sorry, but you've reached the end of search results.`,
       position: 'topRight',
-    });
-  }
-
-  pageNumber++;
-  loadBtn.after(loaderAnimation);
-
-  try {
-    const pics = await fetchPics();
-    renderPics(pics);
-  } catch (error) {
-    loaderAnimation.remove();
-    iziToast.show({
-      message: `${error}`,
-      position: 'topRight',
-      color: '#EF4040',
-      messageColor: '#FAFAFB',
-      iconUrl: '/img/bi_x-octagon.svg',
     });
   }
 }
