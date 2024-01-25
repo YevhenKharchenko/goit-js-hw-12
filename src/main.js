@@ -64,7 +64,7 @@ async function fetchPics() {
       page: `${pageNumber}`,
     },
   });
-  console.log(response.data.hits);
+
   return response.data;
 }
 
