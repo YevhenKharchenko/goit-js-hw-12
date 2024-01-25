@@ -64,7 +64,7 @@ async function fetchPics() {
       page: `${pageNumber}`,
     },
   });
-
+  console.log(response.data.hits);
   return response.data;
 }
 
@@ -84,6 +84,15 @@ function renderPics({ hits }) {
     loadBtn.style.display = 'flex';
     loadBtn.after(loaderAnimation);
     loaderAnimation.style.marginTop = '0';
+  }
+
+  if (hits.length < limitOfPicsPerPage) {
+    loadBtn.style.display = 'none';
+    loaderAnimation.remove();
+    return iziToast.info({
+      message: `We're sorry, but you've reached the end of search results.`,
+      position: 'topRight',
+    });
   }
 
   const markup = hits
