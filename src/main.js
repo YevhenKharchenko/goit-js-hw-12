@@ -14,7 +14,7 @@ loaderAnimation.classList.add('loader');
 
 let pageNumber = 1;
 let limitOfPicsPerPage = 40;
-const totalPages = Math.ceil(500 / limitOfPicsPerPage);
+const totalPages = Math.floor(500 / limitOfPicsPerPage);
 let inputQuery = '';
 const userKey = '41829663-a3becd9e4f80ae5dbcbf223ac';
 
@@ -26,17 +26,23 @@ const instanceOfLightbox = new simpleLightbox('li a', {
 
 form.addEventListener('submit', onFormSubmit);
 
+loadBtn.addEventListener('click', onLoadBtnClick);
+
 async function onFormSubmit(e) {
   e.preventDefault();
-  loadBtn.style.display = 'none';
-  pageNumber = 1;
-  gallery.innerHTML = '';
-  form.after(loaderAnimation);
-  inputQuery = formInput.value;
 
   try {
+    loadBtn.style.display = 'none';
+    pageNumber = 1;
+    gallery.innerHTML = '';
+    form.after(loaderAnimation);
+    loaderAnimation.style.marginTop = '300px';
+
+    inputQuery = formInput.value;
+
     const pics = await fetchPics();
     renderPics(pics);
+    loaderAnimation.remove();
   } catch (error) {
     loaderAnimation.remove();
     iziToast.show({
@@ -48,8 +54,6 @@ async function onFormSubmit(e) {
     });
     formInput.value = '';
   }
-
-  loadBtn.addEventListener('click', onLoadBtnClick);
 }
 
 async function fetchPics() {
@@ -146,6 +150,7 @@ function renderPics({ hits }) {
 
 async function onLoadBtnClick() {
   pageNumber++;
+
   loadBtn.after(loaderAnimation);
   loadBtn.style.display = 'none';
 
@@ -164,6 +169,16 @@ async function onLoadBtnClick() {
       top: galleryItemRect.height * 3 + galleryGapValue * 5,
       behavior: 'smooth',
     });
+
+    if (pageNumber > totalPages) {
+      loadBtn.style.display = 'none';
+      loaderAnimation.remove();
+
+      return iziToast.info({
+        message: `We're sorry, but you've reached the end of search results.`,
+        position: 'topRight',
+      });
+    }
   } catch (error) {
     loaderAnimation.remove();
     iziToast.show({
@@ -172,14 +187,6 @@ async function onLoadBtnClick() {
       color: '#EF4040',
       messageColor: '#FAFAFB',
       iconUrl: '/img/bi_x-octagon.svg',
-    });
-  }
-
-  if (pageNumber > totalPages) {
-    loadBtn.style.display = 'none';
-    return iziToast.info({
-      message: `We're sorry, but you've reached the end of search results.`,
-      position: 'topRight',
     });
   }
 }
