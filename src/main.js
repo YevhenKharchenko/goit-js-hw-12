@@ -161,7 +161,7 @@ async function onLoadBtnClick() {
     );
 
     scrollBy({
-      top: galleryItemRect.height * 3 + galleryGapValue * 5,
+      top: galleryItemRect.height * 3 + galleryGapValue * 3,
       behavior: 'smooth',
     });
   } catch (error) {
