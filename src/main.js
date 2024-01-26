@@ -1,6 +1,6 @@
 import iziToast from 'izitoast';
 import 'izitoast/dist/css/iziToast.min.css';
-import simpleLightbox from 'simplelightbox';
+import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 import bixOctagonSvg from './img/bi_x-octagon.svg';
 import axios from 'axios';
@@ -14,11 +14,11 @@ loaderAnimation.classList.add('loader');
 
 let pageNumber = 1;
 let limitOfPicsPerPage = 40;
-const totalPages = Math.floor(500 / limitOfPicsPerPage);
+let totalHits;
 let inputQuery = '';
 const userKey = '41829663-a3becd9e4f80ae5dbcbf223ac';
 
-const instanceOfLightbox = new simpleLightbox('li a', {
+const instanceOfLightbox = new SimpleLightbox('li a', {
   captionsData: 'alt',
   captionClass: 'img-caption',
   captionDelay: 250,
@@ -37,9 +37,7 @@ async function onFormSubmit(e) {
     gallery.innerHTML = '';
     form.after(loaderAnimation);
     loaderAnimation.style.marginTop = '300px';
-
     inputQuery = formInput.value;
-
     const pics = await fetchPics();
     renderPics(pics);
     loaderAnimation.remove();
@@ -59,15 +57,17 @@ async function onFormSubmit(e) {
 async function fetchPics() {
   const response = await axios.get('https://pixabay.com/api/', {
     params: {
-      key: `${userKey}`,
-      q: `${inputQuery}`,
+      key: userKey,
+      q: inputQuery,
       image_type: 'photo',
       orientation: 'horizontal',
       safesearch: true,
-      per_page: `${limitOfPicsPerPage}`,
-      page: `${pageNumber}`,
+      per_page: limitOfPicsPerPage,
+      page: pageNumber,
     },
   });
+
+  totalHits = response.data.totalHits;
 
   return response.data;
 }
@@ -144,20 +144,18 @@ function renderPics({ hits }) {
   loaderAnimation.remove();
   gallery.insertAdjacentHTML('beforeend', markup);
   formInput.value = '';
-
   instanceOfLightbox.refresh();
 }
 
 async function onLoadBtnClick() {
-  pageNumber++;
-
+  const totalPages = Math.floor(totalHits / limitOfPicsPerPage);
   loadBtn.after(loaderAnimation);
   loadBtn.style.display = 'none';
+  pageNumber++;
 
   try {
     const pics = await fetchPics();
     renderPics(pics);
-
     const galleryItem = document.querySelector('.gallery-item');
     const galleryItemRect = galleryItem.getBoundingClientRect();
     const galleryComputedStyle = getComputedStyle(gallery);
