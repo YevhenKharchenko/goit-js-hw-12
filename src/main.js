@@ -56,7 +56,7 @@ async function onFormSubmit(e) {
       position: 'topRight',
       color: '#EF4040',
       messageColor: '#FAFAFB',
-      iconUrl: '/img/bi_x-octagon.svg',
+      iconUrl: bixOctagonSvg,
     });
     formInput.value = '';
   }
@@ -192,7 +192,7 @@ async function onLoadBtnClick() {
       position: 'topRight',
       color: '#EF4040',
       messageColor: '#FAFAFB',
-      iconUrl: '/img/bi_x-octagon.svg',
+      iconUrl: bixOctagonSvg,
     });
   }
 }
