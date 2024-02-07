@@ -31,6 +31,14 @@ loadBtn.addEventListener('click', onLoadBtnClick);
 async function onFormSubmit(e) {
   e.preventDefault();
 
+  if (!formInput.value.trim()) {
+    formInput.value = '';
+    return iziToast.warning({
+      message: 'Input field is empty. Please provide a value.',
+      position: 'topRight',
+    });
+  }
+
   try {
     loadBtn.style.display = 'none';
     pageNumber = 1;
