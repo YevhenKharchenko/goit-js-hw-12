@@ -25,6 +25,11 @@ export default defineConfig(({ command }) => {
       },
       outDir: '../dist',
     },
+    define: {
+      'process.env': {
+        VITE_API_KEY: process.env.VITE_API_KEY,
+      },
+    },
     optimizeDeps: {
       include: [
         'axios',
