@@ -16,7 +16,7 @@ let pageNumber = 1;
 let limitOfPicsPerPage = 40;
 let totalHits;
 let inputQuery = '';
-const userKey = '41829663-a3becd9e4f80ae5dbcbf223ac';
+const userKey = import.meta.env.VITE_API_KEY;
 
 const instanceOfLightbox = new SimpleLightbox('li a', {
   captionsData: 'alt',

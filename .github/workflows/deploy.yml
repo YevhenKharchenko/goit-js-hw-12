@@ -21,3 +21,7 @@ jobs:
         with:
           branch: gh-pages
           folder: dist
+
+      - name: Set environment variables
+        run: |
+          echo "VITE_API_KEY=${{ secrets.VITE_API_KEY }}" >> $GITHUB_ENV

@@ -25,6 +25,15 @@ export default defineConfig(({ command }) => {
       },
       outDir: '../dist',
     },
+    optimizeDeps: {
+      include: [
+        'axios',
+        'izitoast',
+        'simplelightbox',
+        'vite-plugin-full-reload',
+        'vite-plugin-html-inject',
+      ],
+    },
     plugins: [injectHTML(), FullReload(['./src/**/**.html'])],
   };
 });
