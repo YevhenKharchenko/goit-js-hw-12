@@ -7,6 +7,7 @@ export default defineConfig(({ command }) => {
   return {
     define: {
       [command === 'serve' ? 'global' : '_global']: {},
+      // 'import.meta.env.VITE_API_KEY': JSON.stringify(process.env.VITE_API_KEY),
     },
     root: 'src',
     build: {
@@ -24,11 +25,6 @@ export default defineConfig(({ command }) => {
         },
       },
       outDir: '../dist',
-    },
-    define: {
-      'process.env': {
-        VITE_API_KEY: process.env.VITE_API_KEY,
-      },
     },
     optimizeDeps: {
       include: [

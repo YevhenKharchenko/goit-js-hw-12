@@ -11,6 +11,16 @@ jobs:
       - name: Checkout 🛎️
         uses: actions/checkout@v2.3.1
 
+      - name: Set environment variables
+        shell: bash
+        env:
+          VITE_API_KEY: ${{ secrets.VITE_API_KEY }}
+        run: |
+          echo "VITE_API_KEY=${{ secrets.VITE_API_KEY }}" >> $GITHUB_ENV
+
+      - name: Verify Environment Variable
+        run: echo "VITE_API_KEY=$VITE_API_KEY"
+
       - name: Install and build 🔧
         run: |
           npm install
@@ -21,10 +31,3 @@ jobs:
         with:
           branch: gh-pages
           folder: dist
-
-      - name: Read a secret
-        run: echo "My existing secret is ${{secrets.VITE_API_KEY}}"
-
-      - name: Set environment variables
-        run: |
-          echo "VITE_API_KEY=${{ secrets.VITE_API_KEY }}" >> $GITHUB_ENV
